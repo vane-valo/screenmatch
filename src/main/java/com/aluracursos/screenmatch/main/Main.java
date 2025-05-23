@@ -1,13 +1,21 @@
 package com.aluracursos.screenmatch.main;
 
+import com.aluracursos.screenmatch.model.Episode;
+import com.aluracursos.screenmatch.model.EpisodeInfo;
 import com.aluracursos.screenmatch.model.SeasonInfo;
 import com.aluracursos.screenmatch.model.SeriesInfo;
 import com.aluracursos.screenmatch.service.ConsumeAPI;
 import com.aluracursos.screenmatch.service.DataConverter;
+import org.springframework.cglib.core.Local;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class Main {
     private Scanner scanner = new Scanner(System.in);
@@ -33,6 +41,42 @@ public class Main {
         }
         //seasonsList.forEach(System.out::println);
 
-        seasonsList.forEach(s -> s.seasonEpisodes().forEach(e -> System.out.println(e.episodeTitle())));
+        //seasonsList.forEach(s -> s.seasonEpisodes().forEach(e -> System.out.println(e.episodeTitle())));
+
+        List<EpisodeInfo> episodeInfo = seasonsList.stream()
+                .flatMap(s -> s.seasonEpisodes().stream())
+                .collect(Collectors.toList());
+
+        System.out.println("Top 5 episodes: ");
+
+        episodeInfo.stream()
+                .filter(e -> !e.episodeRating().equalsIgnoreCase("N/A"))
+                .sorted(Comparator.comparing(EpisodeInfo::episodeRating).reversed())
+                .limit(5)
+                .forEach(System.out::println);
+
+        //System.out.println("Every episode on each season: ");
+        List<Episode> episodesList = seasonsList.stream()
+                .flatMap(s-> s.seasonEpisodes().stream()
+                        .map(d -> new Episode(s.seasonNumber(), d)))
+                .collect(Collectors.toList());
+
+        //episodesList.forEach(System.out::println);
+
+        System.out.println("From what released year you want to see: ");
+        var yearDate = scanner.nextInt();
+        scanner.nextLine();
+
+        LocalDate searchDate = LocalDate.of(yearDate, 1,1);
+
+        DateTimeFormatter dft = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        episodesList.stream()
+                .filter(e -> e.getEpisodeClassReleasedDate() != null && e.getEpisodeClassReleasedDate().isAfter(searchDate))
+                .forEach(e -> System.out.println(
+                        "Season= " + e.getEpisodeClassSeason() +
+                                " Episode= " + e.getEpisodeClassNumber() +
+                                " ReleasedDate= " + e.getEpisodeClassReleasedDate().format(dft)
+                ));
     }
 }
