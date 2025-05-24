@@ -10,10 +10,7 @@ import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -78,5 +75,23 @@ public class Main {
                                 " Episode= " + e.getEpisodeClassNumber() +
                                 " ReleasedDate= " + e.getEpisodeClassReleasedDate().format(dft)
                 ));
+
+        //Get the rating by season
+        Map<Integer, Double> seasonRating = episodesList.stream()
+                .filter(e -> e.getEpisodeClassRating() > 0)
+                .collect(Collectors.groupingBy(Episode::getEpisodeClassSeason,
+                        Collectors.averagingDouble(Episode::getEpisodeClassRating)));
+
+        System.out.println(seasonRating);
+
+        //Calculate statistics of the season rating
+        DoubleSummaryStatistics est = episodesList.stream()
+                .filter(e -> e.getEpisodeClassRating() > 0)
+                .collect(Collectors.summarizingDouble(Episode::getEpisodeClassRating));
+
+        System.out.println("Average rating episode= " + est.getAverage());
+        System.out.println("Highest rating episode= " + est.getMax());
+        System.out.println("Lowest rating episode= " + est.getMin());
+        System.out.println("Total episodes= " + est.getCount());
     }
 }

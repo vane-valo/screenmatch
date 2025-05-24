@@ -46,4 +46,12 @@ public class Episode {
     public LocalDate getEpisodeClassReleasedDate() {
         return episodeClassReleasedDate;
     }
+
+    public String getEpisdeClassTitle() {
+        return episdeClassTitle;
+    }
+
+    public Double getEpisodeClassRating() {
+        return episodeClassRating;
+    }
 }
